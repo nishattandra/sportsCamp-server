@@ -67,6 +67,11 @@ async function run() {
       const result = await registeredUserCollection.find(query).toArray();
       res.send(result);
     });
+    app.get("/classes", async (req, res) => {
+      const query = { condition: "approved" };
+      const result = await classesCollection.find(query).toArray();
+      res.send(result);
+    });
 
     // Admin
     app.get('/admin/registeredusers',verifyJWT, async (req, res) => {
