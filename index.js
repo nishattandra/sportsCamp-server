@@ -37,6 +37,11 @@ async function run() {
       const result = await registeredUserCollection.insertOne(newUsers);
       res.send(result);
     });
+    app.get("/instructors", async (req, res) => {
+      const query = { type: "instructor" };
+      const result = await registeredUserCollection.find(query).toArray();
+      res.send(result);
+    });
     // Work End
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
