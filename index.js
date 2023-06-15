@@ -42,6 +42,7 @@ async function run() {
     await client.connect();
     // Work Here
     const registeredUserCollection = client.db("summercampDB").collection("registeredusers");
+    const classesCollection = client.db("summercampDB").collection("classes");
 
     app.post('/jwt', (req, res) => {
         const user = req.body;
@@ -82,6 +83,22 @@ async function run() {
                 },
             };
             const result = await registeredUserCollection.updateOne(query, updateDoc);
+            res.send(result);
+    });
+    app.get('/admin/manageclasses', verifyJWT, async (req, res) => {
+        const result = await classesCollection.find().toArray();
+        res.send(result);
+    });
+    app.patch('/admin/conditionupdate/:id', async (req, res) => {
+        const id = req.params.id;
+            const condition = req.query.condition;
+            const query = { _id: new ObjectId(id) };
+            const updateDoc = {
+                $set: {
+                    condition: condition
+                },
+            };
+            const result = await classesCollection.updateOne(query, updateDoc);
             res.send(result);
     });
     // Work End
