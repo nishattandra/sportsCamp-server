@@ -108,6 +108,13 @@ async function run() {
         const result = await classesCollection.insertOne(newItem)
         res.send(result);
     })
+    // Instructor
+    app.get('/instructor/addedclasses/:email', async (req, res) => {
+        const email = req.params.email;
+        const query = {email: email}
+        const result = await classesCollection.find(query).toArray()
+        res.send(result);
+    })
     // Work End
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
