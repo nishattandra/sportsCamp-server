@@ -23,7 +23,20 @@ async function run() {
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
     // Work Here
-    
+    const registeredUserCollection = client.db("summercampDB").collection("registeredusers");
+
+    app.post("/registeredusers", async (req, res) => {
+      const newUsers = req.body;
+      const query = { email: newUsers.email };
+      const alreadyregistered = await registeredUserCollection.findOne(query);
+
+      if (alreadyregistered) {
+        return res.send({ message: "user already exists" });
+      }
+
+      const result = await registeredUserCollection.insertOne(newUsers);
+      res.send(result);
+    });
     // Work End
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
