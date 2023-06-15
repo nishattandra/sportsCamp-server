@@ -72,7 +72,7 @@ async function run() {
         const result = await registeredUserCollection.find().toArray();
         res.send(result);
     });
-    app.patch('/admin/typeupdate', async (req, res) => {
+    app.patch('/admin/typeupdate/:id', async (req, res) => {
         const id = req.params.id;
             const type = req.query.type;
             const query = { _id: new ObjectId(id) };
@@ -81,7 +81,6 @@ async function run() {
                     type: type
                 },
             };
-
             const result = await registeredUserCollection.updateOne(query, updateDoc);
             res.send(result);
     });
