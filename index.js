@@ -68,9 +68,22 @@ async function run() {
     });
 
     // Admin
-    app.get('/admin/registeredusers', async (req, res) => {
+    app.get('/admin/registeredusers',verifyJWT, async (req, res) => {
         const result = await registeredUserCollection.find().toArray();
         res.send(result);
+    });
+    app.patch('/admin/typeupdate', async (req, res) => {
+        const id = req.params.id;
+            const type = req.query.type;
+            const query = { _id: new ObjectId(id) };
+            const updateDoc = {
+                $set: {
+                    type: type
+                },
+            };
+
+            const result = await registeredUserCollection.updateOne(query, updateDoc);
+            res.send(result);
     });
     // Work End
     // Send a ping to confirm a successful connection
