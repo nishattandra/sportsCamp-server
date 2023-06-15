@@ -101,6 +101,13 @@ async function run() {
             const result = await classesCollection.updateOne(query, updateDoc);
             res.send(result);
     });
+    // Instructor
+    app.post('/instructor/addclasses', verifyJWT, async (req, res) => {
+        const newItem = req.body;
+        console.log(newItem)
+        const result = await classesCollection.insertOne(newItem)
+        res.send(result);
+    })
     // Work End
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
