@@ -63,25 +63,25 @@ async function run() {
       res.send({ token });
     });
     //User Type Check
-    app.get("/users/checkadmin/:email", verifyJWT, async (req, res) => {
+    app.get("/users/checkadmin/:email",async (req, res) => {
       const email = req?.params?.email;
       const query = { email: email };
       const user = await registeredUserCollection.findOne(query);
       const result = { admin: user?.type === "admin" };
       res.send(result);
     });
-    app.get("/users/checkinstructor/:email", verifyJWT, async (req, res) => {
+    app.get("/users/checkinstructor/:email",async (req, res) => {
       const email = req?.params?.email;
       const query = { email: email };
       const user = await registeredUserCollection.findOne(query);
-      const result = { admin: user?.type === "instructor" };
+      const result = { instructor: user?.type === "instructor" };
       res.send(result);
     });
-    app.get("/users/checkstudent/:email", verifyJWT, async (req, res) => {
+    app.get("/users/checkstudent/:email",async (req, res) => {
       const email = req?.params?.email;
       const query = { email: email };
       const user = await registeredUserCollection.findOne(query);
-      const result = { admin: user?.type !== "admin" && user?.type !== "instructor" };
+      const result = { student: user?.type !== "admin" && user?.type !== "instructor" };
       res.send(result);
     });
 
