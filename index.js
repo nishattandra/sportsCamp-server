@@ -163,6 +163,51 @@ async function run() {
         clientSecret: paymentIntent.client_secret,
       });
     });
+    // Payment Details
+    app.get('/student/payment/:id', async (req, res) => {
+        const id = req.params.id;
+        const query = { _id: new ObjectId(id) };
+        const result = await StudentSelectCollection.findOne(query);
+        res.send(result);
+        // console.log(id)
+    })
+    app.post('/student/paymenthistory', verifyJWT, async (req, res) => {
+        const payment = req.body;
+        const result = await paymentCollection.insertOne(payment);
+        res.send(result);
+    })
+    app.patch('/student/paidclass/:id', verifyJWT, async (req, res) => {
+        const id = req.params.id;
+        const status = req.query.status;
+        // console.log(id, status);
+        const filter = { _id: new ObjectId(id) };
+        const updateDoc = {
+            $set: {
+                status: status
+            },
+        };
+
+        const result = await StudentSelectCollection.updateOne(filter, updateDoc);
+        res.send(result);
+
+    })
+    app.patch('/student/updateapproved/:id', verifyJWT, async (req, res) => {
+        const id = req.params.id;
+        const query = { _id: new ObjectId(id) };
+        const result = await classesCollection.findOne(query);
+        const newSeat = (result?.seat) - 1;
+        const newStudent = (result?.student) + 1;
+        const updateDoc = {
+            $set: {
+                seat: newSeat,
+                student: newStudent
+            },
+        };
+
+        const insertedresult = await classesCollection.updateOne(query, updateDoc);
+        res.send(insertedresult);
+
+    })
 
     // Work End
     // Send a ping to confirm a successful connection
