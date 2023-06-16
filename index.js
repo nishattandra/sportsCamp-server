@@ -85,6 +85,13 @@ async function run() {
       const result = await classesCollection.find(query).toArray();
       res.send(result);
     });
+    app.get("/populars", async (req, res) => {
+        const query = { condition: "approved" };
+        const popularclass = await classesCollection.find(query).limit(6).sort({student: -1}).toArray();
+        const filter = { type: "instructor" };
+      const popularinstructor = await registeredUserCollection.find(filter).limit(6).toArray();
+        res.send([popularclass,popularinstructor]);
+      });
 
     // Admin
     app.get("/admin/registeredusers", verifyJWT, async (req, res) => {
@@ -119,6 +126,20 @@ async function run() {
       const result = await classesCollection.updateOne(query, updateDoc);
       res.send(result);
     });
+    app.patch('/admin/feedback/:id', verifyJWT, async (req, res) => {
+        const id = req.params.id;
+        const feedback = req.query.feedback;
+        const filter = { _id: new ObjectId(id) };
+        const updateDoc = {
+            $set: {
+                feedback: feedback
+            },
+        };
+
+        const result = await classesCollection.updateOne(filter, updateDoc);
+        res.send(result);
+
+    })
     // Instructor
     app.post("/instructor/addclasses", verifyJWT, async (req, res) => {
       const newItem = req.body;
@@ -162,7 +183,7 @@ async function run() {
     app.get("/student/payments", async (req, res) => {
         const email = req.query.email;
         const query = { useremail: email};
-        const result = await paymentCollection.find(query).toArray();
+        const result = await paymentCollection.find(query).sort({date: -1}).toArray();
         res.send(result);
       });
 
