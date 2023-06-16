@@ -147,6 +147,12 @@ async function run() {
       const result = await StudentSelectCollection.find(query).toArray();
       res.send(result);
     });
+    app.get("/student/enrollclasses", async (req, res) => {
+      const email = req.query.email;
+      const query = { useremail: email, status: "paid" };
+      const result = await StudentSelectCollection.find(query).toArray();
+      res.send(result);
+    });
 
     // Payment
     // create payment intent
