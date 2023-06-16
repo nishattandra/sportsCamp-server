@@ -159,6 +159,12 @@ async function run() {
         const result = await StudentSelectCollection.deleteOne(query);
         res.send(result);
     })
+    app.get("/student/payments", async (req, res) => {
+        const email = req.query.email;
+        const query = { useremail: email};
+        const result = await paymentCollection.find(query).toArray();
+        res.send(result);
+      });
 
     // Payment
     // create payment intent
