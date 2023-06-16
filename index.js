@@ -137,6 +137,12 @@ async function run() {
       const result = await StudentSelectCollection.insertOne(newItem);
       res.send(result);
     });
+    app.get('/student/selectedclasses', async (req, res) => {
+        const email = req.query.email;
+        const query = { useremail: email, status: 'booked' };
+        const result = await StudentSelectCollection.find(query).toArray();
+        res.send(result);
+    });
     // Work End
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
