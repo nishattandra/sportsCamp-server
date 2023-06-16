@@ -53,7 +53,7 @@ async function run() {
     const StudentSelectCollection = client
       .db("summercampDB")
       .collection("selectedclass");
-      const paymentCollection = client.db("summercampDB").collection("payments");
+    const paymentCollection = client.db("summercampDB").collection("payments");
 
     app.post("/jwt", (req, res) => {
       const user = req.body;
@@ -61,6 +61,28 @@ async function run() {
         expiresIn: "1h",
       });
       res.send({ token });
+    });
+    //User Type Check
+    app.get("/users/checkadmin/:email", verifyJWT, async (req, res) => {
+      const email = req?.params?.email;
+      const query = { email: email };
+      const user = await registeredUserCollection.findOne(query);
+      const result = { admin: user?.type === "admin" };
+      res.send(result);
+    });
+    app.get("/users/checkinstructor/:email", verifyJWT, async (req, res) => {
+      const email = req?.params?.email;
+      const query = { email: email };
+      const user = await registeredUserCollection.findOne(query);
+      const result = { admin: user?.type === "instructor" };
+      res.send(result);
+    });
+    app.get("/users/checkstudent/:email", verifyJWT, async (req, res) => {
+      const email = req?.params?.email;
+      const query = { email: email };
+      const user = await registeredUserCollection.findOne(query);
+      const result = { admin: user?.type !== "admin" && user?.type !== "instructor" };
+      res.send(result);
     });
 
     app.post("/registeredusers", async (req, res) => {
@@ -86,12 +108,19 @@ async function run() {
       res.send(result);
     });
     app.get("/populars", async (req, res) => {
-        const query = { condition: "approved" };
-        const popularclass = await classesCollection.find(query).limit(6).sort({student: -1}).toArray();
-        const filter = { type: "instructor" };
-      const popularinstructor = await registeredUserCollection.find(filter).limit(6).toArray();
-        res.send([popularclass,popularinstructor]);
-      });
+      const query = { condition: "approved" };
+      const popularclass = await classesCollection
+        .find(query)
+        .limit(6)
+        .sort({ student: -1 })
+        .toArray();
+      const filter = { type: "instructor" };
+      const popularinstructor = await registeredUserCollection
+        .find(filter)
+        .limit(6)
+        .toArray();
+      res.send([popularclass, popularinstructor]);
+    });
 
     // Admin
     app.get("/admin/registeredusers", verifyJWT, async (req, res) => {
@@ -126,20 +155,19 @@ async function run() {
       const result = await classesCollection.updateOne(query, updateDoc);
       res.send(result);
     });
-    app.patch('/admin/feedback/:id', verifyJWT, async (req, res) => {
-        const id = req.params.id;
-        const feedback = req.query.feedback;
-        const filter = { _id: new ObjectId(id) };
-        const updateDoc = {
-            $set: {
-                feedback: feedback
-            },
-        };
+    app.patch("/admin/feedback/:id", verifyJWT, async (req, res) => {
+      const id = req.params.id;
+      const feedback = req.query.feedback;
+      const filter = { _id: new ObjectId(id) };
+      const updateDoc = {
+        $set: {
+          feedback: feedback,
+        },
+      };
 
-        const result = await classesCollection.updateOne(filter, updateDoc);
-        res.send(result);
-
-    })
+      const result = await classesCollection.updateOne(filter, updateDoc);
+      res.send(result);
+    });
     // Instructor
     app.post("/instructor/addclasses", verifyJWT, async (req, res) => {
       const newItem = req.body;
@@ -174,18 +202,21 @@ async function run() {
       const result = await StudentSelectCollection.find(query).toArray();
       res.send(result);
     });
-    app.delete('/student/selectclass/:id', verifyJWT, async (req, res) => {
-        const id = req.params.id;
-        const query = { _id: new ObjectId(id) };
-        const result = await StudentSelectCollection.deleteOne(query);
-        res.send(result);
-    })
+    app.delete("/student/selectclass/:id", verifyJWT, async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await StudentSelectCollection.deleteOne(query);
+      res.send(result);
+    });
     app.get("/student/payments", async (req, res) => {
-        const email = req.query.email;
-        const query = { useremail: email};
-        const result = await paymentCollection.find(query).sort({date: -1}).toArray();
-        res.send(result);
-      });
+      const email = req.query.email;
+      const query = { useremail: email };
+      const result = await paymentCollection
+        .find(query)
+        .sort({ date: -1 })
+        .toArray();
+      res.send(result);
+    });
 
     // Payment
     // create payment intent
@@ -203,50 +234,51 @@ async function run() {
       });
     });
     // Payment Details
-    app.get('/student/payment/:id', async (req, res) => {
-        const id = req.params.id;
-        const query = { _id: new ObjectId(id) };
-        const result = await StudentSelectCollection.findOne(query);
-        res.send(result);
-        // console.log(id)
-    })
-    app.post('/student/paymenthistory', verifyJWT, async (req, res) => {
-        const payment = req.body;
-        const result = await paymentCollection.insertOne(payment);
-        res.send(result);
-    })
-    app.patch('/student/paidclass/:id', verifyJWT, async (req, res) => {
-        const id = req.params.id;
-        const status = req.query.status;
-        // console.log(id, status);
-        const filter = { _id: new ObjectId(id) };
-        const updateDoc = {
-            $set: {
-                status: status
-            },
-        };
+    app.get("/student/payment/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await StudentSelectCollection.findOne(query);
+      res.send(result);
+      // console.log(id)
+    });
+    app.post("/student/paymenthistory", verifyJWT, async (req, res) => {
+      const payment = req.body;
+      const result = await paymentCollection.insertOne(payment);
+      res.send(result);
+    });
+    app.patch("/student/paidclass/:id", verifyJWT, async (req, res) => {
+      const id = req.params.id;
+      const status = req.query.status;
+      // console.log(id, status);
+      const filter = { _id: new ObjectId(id) };
+      const updateDoc = {
+        $set: {
+          status: status,
+        },
+      };
 
-        const result = await StudentSelectCollection.updateOne(filter, updateDoc);
-        res.send(result);
+      const result = await StudentSelectCollection.updateOne(filter, updateDoc);
+      res.send(result);
+    });
+    app.patch("/student/updateapproved/:id", verifyJWT, async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await classesCollection.findOne(query);
+      const newSeat = result?.seat - 1;
+      const newStudent = result?.student + 1;
+      const updateDoc = {
+        $set: {
+          seat: newSeat,
+          student: newStudent,
+        },
+      };
 
-    })
-    app.patch('/student/updateapproved/:id', verifyJWT, async (req, res) => {
-        const id = req.params.id;
-        const query = { _id: new ObjectId(id) };
-        const result = await classesCollection.findOne(query);
-        const newSeat = (result?.seat) - 1;
-        const newStudent = (result?.student) + 1;
-        const updateDoc = {
-            $set: {
-                seat: newSeat,
-                student: newStudent
-            },
-        };
-
-        const insertedresult = await classesCollection.updateOne(query, updateDoc);
-        res.send(insertedresult);
-
-    })
+      const insertedresult = await classesCollection.updateOne(
+        query,
+        updateDoc
+      );
+      res.send(insertedresult);
+    });
 
     // Work End
     // Send a ping to confirm a successful connection
