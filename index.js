@@ -3,8 +3,9 @@ const app = express();
 const cors = require("cors");
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
+const stripe = require("stripe")(process.env.PAYMENT_SECRET_KEY);
 const port = process.env.PORT || 5000;
-
+// console.log(process.env.PAYMENT_SECRET_KEY);
 app.use(cors());
 app.use(express.json());
 
@@ -49,7 +50,10 @@ async function run() {
       .db("summercampDB")
       .collection("registeredusers");
     const classesCollection = client.db("summercampDB").collection("classes");
-    const StudentSelectCollection = client.db("summercampDB").collection("selectedclass");
+    const StudentSelectCollection = client
+      .db("summercampDB")
+      .collection("selectedclass");
+      const paymentCollection = client.db("summercampDB").collection("payments");
 
     app.post("/jwt", (req, res) => {
       const user = req.body;
@@ -133,16 +137,33 @@ async function run() {
     // Student
     app.post("/student/selectclasses", verifyJWT, async (req, res) => {
       const newItem = req.body;
-    //   console.log(newItem)
+      //   console.log(newItem)
       const result = await StudentSelectCollection.insertOne(newItem);
       res.send(result);
     });
-    app.get('/student/selectedclasses', async (req, res) => {
-        const email = req.query.email;
-        const query = { useremail: email, status: 'booked' };
-        const result = await StudentSelectCollection.find(query).toArray();
-        res.send(result);
+    app.get("/student/selectedclasses", async (req, res) => {
+      const email = req.query.email;
+      const query = { useremail: email, status: "booked" };
+      const result = await StudentSelectCollection.find(query).toArray();
+      res.send(result);
     });
+
+    // Payment
+    // create payment intent
+    app.post("/create-payment-intent", verifyJWT, async (req, res) => {
+      const { price } = req.body;
+      const amount = parseInt(price * 100);
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: amount,
+        currency: "usd",
+        payment_method_types: ["card"],
+      });
+
+      res.send({
+        clientSecret: paymentIntent.client_secret,
+      });
+    });
+
     // Work End
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
