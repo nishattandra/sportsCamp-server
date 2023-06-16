@@ -63,21 +63,21 @@ async function run() {
       res.send({ token });
     });
     //User Type Check
-    app.get("/users/checkadmin/:email",async (req, res) => {
+    app.get("/users/checkadmin/:email",verifyJWT, async (req, res) => {
       const email = req?.params?.email;
       const query = { email: email };
       const user = await registeredUserCollection.findOne(query);
       const result = { admin: user?.type === "admin" };
       res.send(result);
     });
-    app.get("/users/checkinstructor/:email",async (req, res) => {
+    app.get("/users/checkinstructor/:email",verifyJWT, async (req, res) => {
       const email = req?.params?.email;
       const query = { email: email };
       const user = await registeredUserCollection.findOne(query);
       const result = { instructor: user?.type === "instructor" };
       res.send(result);
     });
-    app.get("/users/checkstudent/:email",async (req, res) => {
+    app.get("/users/checkstudent/:email",verifyJWT,async (req, res) => {
       const email = req?.params?.email;
       const query = { email: email };
       const user = await registeredUserCollection.findOne(query);
@@ -127,7 +127,7 @@ async function run() {
       const result = await registeredUserCollection.find().toArray();
       res.send(result);
     });
-    app.patch("/admin/typeupdate/:id", async (req, res) => {
+    app.patch("/admin/typeupdate/:id",verifyJWT, async (req, res) => {
       const id = req.params.id;
       const type = req.query.type;
       const query = { _id: new ObjectId(id) };
@@ -143,7 +143,7 @@ async function run() {
       const result = await classesCollection.find().toArray();
       res.send(result);
     });
-    app.patch("/admin/conditionupdate/:id", async (req, res) => {
+    app.patch("/admin/conditionupdate/:id",verifyJWT, async (req, res) => {
       const id = req.params.id;
       const condition = req.query.condition;
       const query = { _id: new ObjectId(id) };
@@ -190,13 +190,13 @@ async function run() {
       const result = await StudentSelectCollection.insertOne(newItem);
       res.send(result);
     });
-    app.get("/student/selectedclasses", async (req, res) => {
+    app.get("/student/selectedclasses",verifyJWT, async (req, res) => {
       const email = req.query.email;
       const query = { useremail: email, status: "booked" };
       const result = await StudentSelectCollection.find(query).toArray();
       res.send(result);
     });
-    app.get("/student/enrollclasses", async (req, res) => {
+    app.get("/student/enrollclasses",verifyJWT, async (req, res) => {
       const email = req.query.email;
       const query = { useremail: email, status: "paid" };
       const result = await StudentSelectCollection.find(query).toArray();
@@ -208,7 +208,7 @@ async function run() {
       const result = await StudentSelectCollection.deleteOne(query);
       res.send(result);
     });
-    app.get("/student/payments", async (req, res) => {
+    app.get("/student/payments",verifyJWT, async (req, res) => {
       const email = req.query.email;
       const query = { useremail: email };
       const result = await paymentCollection
